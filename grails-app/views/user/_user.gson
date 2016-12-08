@@ -1,0 +1,7 @@
+import restclient.User
+
+model {
+	User user
+}
+
+json g.render(user)
