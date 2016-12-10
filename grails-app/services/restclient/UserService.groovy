@@ -1,15 +1,17 @@
 package restclient
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty
 import grails.converters.JSON
 import grails.plugins.rest.client.RestBuilder
-import grails.transaction.Transactional
 
-@Transactional
 class UserService {
 
-    @HystrixCommand(fallbackMethod = "reliable")
+    @HystrixCommand(fallbackMethod = "getStaticList", commandProperties = [
+        @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "4"),
+        @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000")])
     def userList() {
+
         RestBuilder restBuilder = new RestBuilder()
         def restRep = restBuilder.get("http://localhost:8080/users") {
             accept JSON
@@ -23,7 +25,7 @@ class UserService {
         return users
     }
 
-    def reliable() {
+    def getStaticList() {
         List<User> users = new ArrayList<>()
         users.add(new User(id: 11, name: "Ironman"))
         users.add(new User(id: 12, name: "Hulk"))
